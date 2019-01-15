@@ -4,15 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start" : "node server/chatserver.js",
+    "start": "node server/chatserver.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "engines":{
-    "node":"11.6.0"
+  "engines": {
+    "node": "11.6.0"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "socket.io": "^2.2.0"
   }
 }

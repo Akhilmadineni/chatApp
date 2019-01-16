@@ -16,6 +16,7 @@
   "dependencies": {
     "express": "^4.16.4",
     "moment": "^2.23.0",
+    "mustache": "^3.0.1",
     "smart-timeout": "^2.0.3",
     "socket.io": "^2.2.0"
   },

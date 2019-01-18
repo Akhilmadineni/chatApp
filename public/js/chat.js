@@ -50,15 +50,7 @@ socket.on('connect', function () {
             createdAt: formattedTime
         });
 
-        var list = jQuery('#messages').children('li:last-child');
-        if (message.from === params.name) {
-        list.css({'float':'right', 'padding':'10px'});
-        }
-        if (message.from === 'Admin') {
-        list.css({'display':'table', 'margin':'0 auto'});
-        }
-
-        $('#messages').append(html);
+      $('#messages').append(html);
     });
 });
 

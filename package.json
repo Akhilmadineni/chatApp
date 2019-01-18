@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.4",
+    "lodash": "^4.17.11",
     "moment": "^2.23.0",
     "mongoose": "^5.4.4",
     "mustache": "^3.0.1",

@@ -1,15 +1,4 @@
-[{
-  id: '/2sdaxmask',
-  name: 'Akhil',
-  room: 'The'
-
-}]
-
-//addUser(id,name,room)
-//removeUser(id)
-// getUser(id)
-// getUserList(room)
-
+ const _ = require('lodash');
 
 class Users{
   constructor () {
@@ -24,12 +13,14 @@ class Users{
    var user =this.getUser(id);
 
    if(user){
-     this.users= this.users.filter((user) => user.id !==id);
+     var newUsers=this.users= this.users.filter((user) => user.id !==id);
+     this.users=newUsers;
    }
    return user;
   }
   getUser(id){
-      return this.users.filter((user) => user.id ===id)[0]
+      var user=this.users.filter((user) => user.id ===id)[0];
+      return user;
   }
   getUserList(room){
     var users = this.users.filter((user)=>user.room===room);
@@ -38,19 +29,15 @@ class Users{
       return namesArray;
 
   }
+  getRooms(){
+       var rooms=[];
+       var users=this.users;
+       users.forEach((user)=>{
+           rooms.push(user.room);
+       });
+       rooms=_.uniq(rooms);
+       return rooms;
+   }
 }
 
 module.exports ={Users};
-// class Person {
-//   constructor (name, age) {
-//     this.name = name;
-//     this.age = age;
-//   }
-//   getUserDescription(){
-//     return `${this.name}is ${this.age}years old`;
-//   }
-// }
-//
-//  var me = new Person('Akhil', 25);
-//  var description = me.getUserDescription();
-//  console.log(description)

@@ -6,7 +6,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 
 const {generateMessage, generateLocationMessage}= require('./utils/message');
-const {isRealString}=require('./utils/validation');
+const {isRealString, isActive}=require('./utils/validation');
 const {Users}=require('./utils/users');
 
 const publicPath = path.join(__dirname, '../public');
@@ -38,8 +38,16 @@ io.on(`connection`, (socket)=>{
 
     socket.on('join', (params, callback) => {
     if (!isRealString(params.name) || !isRealString(params.room)) {
-      callback('Name and room name are required.');
+     return  callback('Name and room name are required.');
     }
+    if (isActive(params.name, users.users)) {
+           return callback(`${params.name} is currently active in another session. Log out before continuing.`);
+       }
+    params.room=params.room.toLowerCase();
+        var userList=users.getUserList(params.room).filter((name)=>name === params.name);
+        if(userList.length>0){
+            return callback('Username already exists');
+        }
     const Chat = mongoose.model(params.room, chatSchema);
         Chat.find({}, (err, docs) => {
             if (err) throw err;
@@ -88,7 +96,10 @@ io.on(`connection`, (socket)=>{
      }
 
      });
-
+     socket.on('newIncomingRequest',()=>{
+             console.log('newIncomingRequest');
+             socket.emit('updateRoomList',users.getRooms());
+         });
   socket.on('disconnect',()=>{
     var user =users.removeUser(socket.id);
 

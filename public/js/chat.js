@@ -2,10 +2,8 @@ var socket = io();
 
 
 function scrollToBottom () {
-  // Selectors
   var messages = jQuery('#messages');
   var newMessage = messages.children('li:last-child')
-  // Heights
   var clientHeight = messages.prop('clientHeight');
   var scrollTop = messages.prop('scrollTop');
   var scrollHeight = messages.prop('scrollHeight');
@@ -29,10 +27,6 @@ socket.on('connect', function () {
    });
 });
 
-socket.on('disconnect', function () {
-  console.log('Disconnected from server');
-});
-
  socket.on('updateUserList', function(users){
    var ol =jQuery('<ol></ol>');
 
@@ -40,21 +34,63 @@ socket.on('disconnect', function () {
      ol.append(jQuery('<li></li>').text(user));
    });
    jQuery('#users').html(ol);
- })
+ });
+
+
+ socket.on('oldMessages', function (docs) {
+    var template = $('#message-template').html();
+
+    scrollToBottom();
+
+    docs.map(function (doc) {
+        var formattedTime = moment(doc.createdAt).format('h:mm a');
+        var html = Mustache.render(template, {
+            text: doc.message,
+            from: doc.name,
+            createdAt: formattedTime
+        });
+
+        var list = jQuery('#messages').children('li:last-child');
+        if (message.from === params.name) {
+        list.css({'float':'right', 'padding':'10px'});
+        }
+        if (message.from === 'Admin') {
+        list.css({'display':'table', 'margin':'0 auto'});
+        }
+
+        $('#messages').append(html);
+    });
+});
+
 socket.on('newMessage', function (message) {
+  var params = jQuery.deparam(window.location.search);
   var formattedTime= moment(message.createdAt).format('h:mm a');
   var template = jQuery('#message-template').html();
+
+  jQuery('#message').append(template);
   var html =Mustache.render(template,{
     text:message.text,
     from: message.from,
     createdAt: formattedTime
   });
   jQuery('#messages').append(html);
+
+  var list = jQuery('#messages').children('li:last-child');
+      if (message.from === params.name) {
+          list.css({'float':'right', 'padding':'10px'});
+      }
+      if (message.from === 'Admin') {
+          list.css({'display':'table', 'margin':'0 auto'});
+      }
+
+
+
   scrollToBottom();
 
 });
 
 socket.on('newLocationMessage', function (message) {
+  var params = jQuery.deparam(window.location.search);
   var formattedTime= moment(message.createdAt).format('h:mm a');
   var template=jQuery('#location-message-template').html();
   var html = Mustache.render(template,{
@@ -63,6 +99,10 @@ socket.on('newLocationMessage', function (message) {
     createdAt: formattedTime
   });
 jQuery('#messages').append(html);
+var list = jQuery('#messages').children('li:last-child');
+    if (message.from === params.name) {
+        list.css({'float':'right', 'padding':'10px'});
+    }
 scrollToBottom();
 });
 
@@ -102,5 +142,7 @@ locationButton.on('click', function () {
     locationButton.removeAttr('disabled').text('Send location');
     alert('Unable to fetch location.');
   });
-
+  socket.on('disconnect', function () {
+    console.log('Disconnected from server');
+  });
 });

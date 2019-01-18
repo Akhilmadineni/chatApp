@@ -11,11 +11,13 @@
   "engines": {
     "node": "11.6.0"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.4",
     "moment": "^2.23.0",
+    "mongoose": "^5.4.4",
     "mustache": "^3.0.1",
     "smart-timeout": "^2.0.3",
     "socket.io": "^2.2.0"

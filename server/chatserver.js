@@ -2,6 +2,8 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
+const moment = require('moment');
+const mongoose = require('mongoose');
 
 const {generateMessage, generateLocationMessage}= require('./utils/message');
 const {isRealString}=require('./utils/validation');
@@ -17,28 +19,56 @@ var users = new Users();
 
 app.use(express.static(publicPath));
 
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/Chat', { useNewUrlParser: true }, err => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('Connected to mongodb');
+    }
+});
+
+const chatSchema = mongoose.Schema({
+    name: String,
+    message: String,
+    url: String,
+    createdAt: Date
+});
+
 io.on(`connection`, (socket)=>{
-  console.log('New user joined');
 
     socket.on('join', (params, callback) => {
     if (!isRealString(params.name) || !isRealString(params.room)) {
       callback('Name and room name are required.');
     }
+    const Chat = mongoose.model(params.room, chatSchema);
+        Chat.find({}, (err, docs) => {
+            if (err) throw err;
+            socket.emit('oldMessages', docs);
+        });
     socket.join(params.room);
     users.removeUser(socket.id);
     users.addUser(socket.id, params.name, params.room);
 
-
     io.to(params.room).emit('updateUserList',users.getUserList(params.room));
+
     socket.emit('newMessage',generateMessage('ChatApp','Welcome to the Chat Room'));
+
     socket.broadcast.to(params.room).emit('newMessage',generateMessage('ChatApp:',`${params.name} has joined`));
+
     callback();
   });
 
    socket.on('createMessage',(message, callback)=>{
-     var user =users.getUser(socket.id);
+     const user =users.getUser(socket.id);
+     const Chat = mongoose.model(user.room, chatSchema);
+
      if(user && isRealString(message.text)){
+       const newMessage = new Chat({ name: user.name, message: message.text, createdAt: moment().valueOf() });
+
+       newMessage.save(err => {
+               if (err) throw err;
        io.to(user.room).emit('newMessage',generateMessage(user.name, message.text));
+     });
      }
 
      callback();
@@ -47,8 +77,14 @@ io.on(`connection`, (socket)=>{
 
    socket.on('createLocationMessage', (coords) => {
      var user =users.getUser(socket.id);
+     const Chat = mongoose.model(user.room, chatSchema);
      if(user ){
-       io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+       const newMessage = new Chat({ name: user.name, url: `https://www.google.com/maps/?q=${coords.latitude},${coords.longitude}`, createdAt: moment().valueOf() });
+       newMessage.save(err => {
+                 if (err) throw err;
+
+                 io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+             });
      }
 
      });
